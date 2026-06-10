@@ -1,0 +1,27 @@
+# ============================================
+# .gitignore — Projeto MongoDB Farmácia (Grupo 6)
+# ============================================
+
+# NUNCA commitar credenciais / string de conexão
+.env
+.env.*
+*conexao*
+*connection-string*
+*credenciais*
+secrets.*
+
+# Arquivos locais de configuração do MongoDB
+mongosh-*.log
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editores
+.vscode/
+.idea/
+*.swp
+
+# Node (caso alguém use)
+node_modules/
