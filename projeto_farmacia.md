@@ -2,7 +2,7 @@
 
 **Disciplina:** IF685 — Gerenciamento de Dados e Informação (2026.1)
 **Professora:** Valéria Cesário Times
-**Alunos:** Amanda Trinity, Maria Luisa Amaral, Maria Eduarda Torres, Mirella Fontinelle, Willian Rupert
+**Aluno:** Amanda Trinity, Maria Eduarda Torres, Mirella Fontinelle, Maria Luisa Brandão, Matheus Vieira, Willian Rupert
 **Stack:** MongoDB Atlas (cluster M0) + Compass
 **Banco:** `farmacia_db`
 
@@ -176,6 +176,13 @@ README.md                 → como conectar (SEM a string de conexão!)
 .gitignore
 ```
 
+**Convenção de estilo dos scripts (seguir em todos):**
+
+- Cabeçalho e blocos em comentário de bloco `/* ... */` (não `//` de linha cheia).
+- Blocos numerados por extenso ("Primeiro Bloco", "Segundo Bloco"...) com título + descrição em bullets `-`.
+- Comentários curtos inline com `//`.
+- Aspas duplas `"..."`, trailing comma, indentação estilo Prettier.
+
 ### Acesso do grupo ao banco (Atlas)
 
 - **Network Access** (site cloud.mongodb.com → Security → Network Access): liberado `0.0.0.0/0` (qualquer IP), toggle "temporary" DESLIGADO (permanente). Permite os colegas conectarem de casa.
@@ -228,6 +235,33 @@ Operações decididas em cima de situações reais de farmácia:
 
 **Estado após o script:** 13 medicamentos (12 + Vitamina C via upsert). Antibióticos ganharam `exige_receita: true`.
 
+> **Dica de execução (registrada):** no shell do mongosh, rodar **um comando por vez**, não colar blocos grandes com comentários. Colar várias chamadas juntas causa `SyntaxError: Unexpected token` (o shell se confunde ao separar os comandos). Os `.js` são referência/documentação; no shell vai linha a linha.
+
+> **Estratégia p/ o .docx final (registrada):** cada query no documento terá: (1) o código, (2) explicação curta do que faz, (3) print do resultado real. O print prova que rodou de verdade. Ir guardando prints dos resultados conforme roda. Focar nos resultados que mostram a query funcionando (não printar tudo).
+
+**Validado no Compass (CRUD):** preço Dipirona 12,5→13 ✅ · estoque Paracetamol 8→7 (`$inc`) ✅ · tag `promoção` adicionada sem duplicar ✅ · upsert Vitamina C criou (`upsertedCount:1`, `matchedCount:0`) ✅ · updateMany 2 antibióticos (`matchedCount:2`) ✅ · delete Produto Teste (`deletedCount:1`) ✅ · **total final: 13 medicamentos** ✅
+
+> Prints guardados para o .docx: retorno do upsert (contraste upsertedCount 1 vs 0) e do updateMany (matchedCount 2).
+
+---
+
+## Seleção e Filtros (script 02_selecao_filtros.js) ✅ VALIDADO
+
+PREP: criada variação em `principios_ativos` (Nimesulida→2, Antigripal Trifásico→3 via upsert). Total agora: **14 medicamentos**.
+
+Validado no Compass (13 itens):
+
+- **find** analgésicos · **findOne** Dipirona · **project** (nome+preco só) · **pretty** antibióticos
+- **gte** preço≥20 (5 docs) · **exists** false→Loratadina+Cetirizina, true→resto · **size** 1 (vários) e 3 (só Antigripal)
+- **all** tags febre+dor · **sort** preço desc + **limit** 5 · **count** analgésicos=2, controlados=4
+- **text/search**: índice `descricao_text` criado (default_language portuguese); search "febre"→Paracetamol+Dipirona, "gripe"→Antigripal
+
+**Conceitos registrados:**
+
+- **"campo ausente" ≠ "campo com valor false"**: `exists` pergunta se o campo está presente, não o valor. `controlado:false` existe (aparece em exists:true). Só Loratadina/Cetirizina não têm o campo.
+- `$text` busca **palavras inteiras** (não pedaços), ignora maiúscula e acento (via collation/idioma).
+- Só pode haver **1 índice de texto** por collection.
+
 ---
 
 ## 3. Queries decididas
@@ -239,37 +273,38 @@ _(a preencher conforme o projeto avança)_
 ## 4. Tabela de rastreabilidade (checklist → query)
 
 Os 31 itens obrigatórios. Marcar conforme cada um for coberto por uma query real.
+**Legenda:** ✅ rodado e validado no Compass · 🔄 script pronto, falta validar · ⬜ não feito
 
-| #   | Item                          | Status | Query que cobre                                                        |
-| --- | ----------------------------- | ------ | ---------------------------------------------------------------------- |
-| 1   | USE                           | ✅     | `use farmacia_db` (script 00)                                          |
-| 2   | FIND                          | ⬜     |                                                                        |
-| 3   | SIZE                          | ⬜     |                                                                        |
-| 4   | AGGREGATE                     | ⬜     |                                                                        |
-| 5   | MATCH                         | ⬜     |                                                                        |
-| 6   | PROJECT                       | ⬜     |                                                                        |
-| 7   | GTE                           | ⬜     |                                                                        |
-| 8   | GROUP                         | ⬜     |                                                                        |
-| 9   | SUM                           | ⬜     |                                                                        |
-| 10  | COUNT (countDocuments)        | ⬜     |                                                                        |
-| 11  | MAX                           | ⬜     |                                                                        |
-| 12  | AVG                           | ⬜     |                                                                        |
-| 13  | EXISTS                        | ⬜     |                                                                        |
-| 14  | SORT                          | ⬜     |                                                                        |
-| 15  | LIMIT                         | ⬜     |                                                                        |
-| 16  | $WHERE                        | ⬜     |                                                                        |
-| 17  | MAPREDUCE                     | ⬜     |                                                                        |
-| 18  | FUNCTION                      | ⬜     |                                                                        |
-| 19  | PRETTY                        | ⬜     |                                                                        |
-| 20  | ALL                           | ⬜     |                                                                        |
-| 21  | SET                           | ✅     | `updateOne(..., {$set:{preco:13.00}})` (script 01-A)                   |
-| 22  | TEXT                          | ⬜     |                                                                        |
-| 23  | SEARCH                        | ⬜     |                                                                        |
-| 24  | FILTER                        | ⬜     |                                                                        |
-| 25  | UPDATE (updateOne/updateMany) | ✅     | `updateOne` reajuste preço / `updateMany` antibióticos (script 01-A/E) |
-| 26  | SAVE (updateOne/insertOne)    | ✅     | `updateOne(..., {upsert:true})` Vitamina C (script 01-D)               |
-| 27  | RENAMECOLLECTION              | ⬜     |                                                                        |
-| 28  | COND                          | ⬜     |                                                                        |
-| 29  | LOOKUP                        | ⬜     |                                                                        |
-| 30  | FINDONE                       | ⬜     |                                                                        |
-| 31  | ADDTOSET                      | ✅     | `updateOne(..., {$addToSet:{tags:"promoção"}})` (script 01-C)          |
+| #   | Item                          | Status | Query que cobre                                                          |
+| --- | ----------------------------- | ------ | ------------------------------------------------------------------------ |
+| 1   | USE                           | ✅     | `use farmacia_db` (script 00)                                            |
+| 2   | FIND                          | ✅     | `find({categoria:"analgésico"})` (script 02)                             |
+| 3   | SIZE                          | ✅     | `find({principios_ativos:{$size:3}})` → só Antigripal (script 02)        |
+| 4   | AGGREGATE                     | ⬜     |                                                                          |
+| 5   | MATCH                         | ⬜     |                                                                          |
+| 6   | PROJECT                       | ✅     | `find({}, {nome:1, preco:1, _id:0})` (script 02)                         |
+| 7   | GTE                           | ✅     | `find({preco:{$gte:20}})` (script 02)                                    |
+| 8   | GROUP                         | ⬜     |                                                                          |
+| 9   | SUM                           | ⬜     |                                                                          |
+| 10  | COUNT (countDocuments)        | ✅     | `countDocuments({categoria:"analgésico"})` → 2 (script 02)               |
+| 11  | MAX                           | ⬜     |                                                                          |
+| 12  | AVG                           | ⬜     |                                                                          |
+| 13  | EXISTS                        | ✅     | `find({controlado:{$exists:false}})` → Loratadina+Cetirizina (script 02) |
+| 14  | SORT                          | ✅     | `.sort({preco:-1})` (script 02)                                          |
+| 15  | LIMIT                         | ✅     | `.limit(5)` 5 mais caros (script 02)                                     |
+| 16  | $WHERE                        | ⬜     |                                                                          |
+| 17  | MAPREDUCE                     | ⬜     |                                                                          |
+| 18  | FUNCTION                      | ⬜     |                                                                          |
+| 19  | PRETTY                        | ✅     | `find(...).pretty()` (script 02)                                         |
+| 20  | ALL                           | ✅     | `find({tags:{$all:["febre","dor"]}})` (script 02)                        |
+| 21  | SET                           | ✅     | `updateOne(..., {$set:{preco:13.00}})` (script 01-A)                     |
+| 22  | TEXT                          | ✅     | `createIndex({descricao:"text"})` → descricao_text (script 02)           |
+| 23  | SEARCH                        | ✅     | `find({$text:{$search:"febre"}})` → Paracetamol+Dipirona (script 02)     |
+| 24  | FILTER                        | ⬜     |                                                                          |
+| 25  | UPDATE (updateOne/updateMany) | ✅     | `updateOne` reajuste preço / `updateMany` antibióticos (script 01-A/E)   |
+| 26  | SAVE (updateOne/insertOne)    | ✅     | `updateOne(..., {upsert:true})` Vitamina C (script 01-D)                 |
+| 27  | RENAMECOLLECTION              | ⬜     |                                                                          |
+| 28  | COND                          | ⬜     |                                                                          |
+| 29  | LOOKUP                        | ⬜     |                                                                          |
+| 30  | FINDONE                       | ✅     | `findOne({nome:"Dipirona 500mg"})` (script 02)                           |
+| 31  | ADDTOSET                      | ✅     | `updateOne(..., {$addToSet:{tags:"promoção"}})` (script 01-C)            |
