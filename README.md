@@ -1,4 +1,4 @@
-# Grupo 6 — Projeto MongoDB (Sistema de Gestão de Farmácia) 💊
+# Grupo 5 — Projeto MongoDB (Sistema de Gestão de Farmácia) 💊
 
 Projeto da disciplina **CIN0137 — Banco de Dados** (2026.1) · Profa. Valéria Cesário Times
 Tema: **Sistema de Gestão de Farmácia** · Banco: MongoDB Atlas + Compass
