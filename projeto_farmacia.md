@@ -292,41 +292,85 @@ _(a preencher conforme o projeto avança)_
 
 ---
 
+## Outros comandos (script 04_outros.js) ✅ VALIDADO (com ressalva Atlas)
+
+Os 5 itens que não se encaixam nos grupos anteriores:
+
+| Item                | Comando                       | Situação                                     | Resultado                                                            |
+| ------------------- | ----------------------------- | -------------------------------------------- | -------------------------------------------------------------------- |
+| 24 FILTER           | `$filter` na agregação        | itens da venda com preço > 15                | ✅ rodou (venda de 34 deu `itens_caros:[]` vazio — prova o conceito) |
+| 18 FUNCTION         | `forEach(function(doc){...})` | imprime nome+preço dos analgésicos           | ✅ rodou                                                             |
+| 27 RENAMECOLLECTION | `renameCollection`            | collection descartável (cria→renomeia→apaga) | ✅ rodou                                                             |
+| 16 $WHERE           | `find({$where:...})`          | filtro com expressão JS                      | ⚠️ Atlas M0 bloqueia → `$expr` equivalente                           |
+| 17 MAPREDUCE        | `mapReduce(map, reduce)`      | contar por categoria                         | ⚠️ Atlas M0 bloqueia → aggregate+group equivalente                   |
+
+**Restrição do Atlas M0 + solução (importante para o documento):**
+O cluster gratuito (M0) **bloqueia `$where` e `mapReduce`** por política de segurança/performance:
+
+- `$where` → erro `$where not allowed in this atlas tier`
+- `mapReduce` → erro `CMD_NOT_ALLOWED: mapReduce` (+ DeprecationWarning: "use an aggregation instead")
+
+**Solução adotada:** os dois comandos foram rodados num **MongoDB Community local** (`mongodb://localhost:27017`), onde não há essa restrição. Lá:
+
+- `$where: "this.estoque < 10"` → retornou os 4 de estoque baixo (Paracetamol, Nimesulida, Fluoxetina, Enalapril) ✅
+- `mapReduce` (emit categoria→1, reduce soma) → contagem 2 por categoria, só com DeprecationWarning (como a professora indicou que é esperado) ✅
+
+**Observações úteis p/ o .docx:**
+
+- O resultado do `mapReduce` é idêntico ao do `aggregate`+`group` (script 03-P1) — dois caminhos, mesmo resultado. Bom pra mostrar que aggregation é o substituto moderno do mapReduce.
+- Equivalente do `$where` que roda no próprio M0: `find({$expr: {$lt: ["$estoque", 10]}})`.
+- Comandos deprecated tratados conforme orientação recebida: SAVE→`updateOne+upsert`, COUNT→`countDocuments`, UPDATE→`updateOne/updateMany`.
+
+**Conceitos registrados:**
+
+- `$filter` peneira elementos DENTRO do array (≠ `$all`/`$size` que filtram o documento). `input`=array, `cond`=condição, `$$item`=cada elemento. Array vazio quando nada passa.
+- `renameCollection` renomeia a COLLECTION inteira (≠ `$rename` que renomeia um CAMPO). Feito em collection descartável.
+- `$where` e `mapReduce` são recursos legados/pesados; o Atlas M0 os bloqueia. Rodados em local; a agregação é o substituto recomendado.
+
+---
+
+## ✅ CHECKLIST COMPLETA: 31/31 itens — TODOS RODADOS
+
+- 29 no Atlas M0 (Compass)
+- 2 ($where, mapReduce) no MongoDB local, pois o M0 os bloqueia — com prints comprovando
+
+---
+
 ## 4. Tabela de rastreabilidade (checklist → query)
 
 Os 31 itens obrigatórios. Marcar conforme cada um for coberto por uma query real.
-**Legenda:** ✅ rodado e validado no Compass · 🔄 script pronto, falta validar · ⬜ não feito
+**Legenda:** ✅ rodado e validado · ⬜ não feito · (obs: $where e mapReduce rodados em MongoDB local pois o Atlas M0 os bloqueia)
 
-| #   | Item                          | Status | Query que cobre                                                          |
-| --- | ----------------------------- | ------ | ------------------------------------------------------------------------ |
-| 1   | USE                           | ✅     | `use farmacia_db` (script 00)                                            |
-| 2   | FIND                          | ✅     | `find({categoria:"analgésico"})` (script 02)                             |
-| 3   | SIZE                          | ✅     | `find({principios_ativos:{$size:3}})` → só Antigripal (script 02)        |
-| 4   | AGGREGATE                     | ✅     | `aggregate([...])` 4 pipelines (script 03)                               |
-| 5   | MATCH                         | ✅     | `{$match:{controlado:true}}` (script 03)                                 |
-| 6   | PROJECT                       | ✅     | `find({}, {nome:1, preco:1, _id:0})` (script 02)                         |
-| 7   | GTE                           | ✅     | `find({preco:{$gte:20}})` (script 02)                                    |
-| 8   | GROUP                         | ✅     | `{$group:{_id:"$categoria",...}}` → 8 categorias (script 03)             |
-| 9   | SUM                           | ✅     | `{$sum:1}` contagem por categoria (script 03)                            |
-| 10  | COUNT (countDocuments)        | ✅     | `countDocuments({categoria:"analgésico"})` → 2 (script 02)               |
-| 11  | MAX                           | ✅     | `{$max:"$preco"}` → 42 Sertralina (script 03)                            |
-| 12  | AVG                           | ✅     | `{$avg:"$preco"}` (script 03)                                            |
-| 13  | EXISTS                        | ✅     | `find({controlado:{$exists:false}})` → Loratadina+Cetirizina (script 02) |
-| 14  | SORT                          | ✅     | `.sort({preco:-1})` (script 02)                                          |
-| 15  | LIMIT                         | ✅     | `.limit(5)` 5 mais caros (script 02)                                     |
-| 16  | $WHERE                        | ⬜     |                                                                          |
-| 17  | MAPREDUCE                     | ⬜     |                                                                          |
-| 18  | FUNCTION                      | ⬜     |                                                                          |
-| 19  | PRETTY                        | ✅     | `find(...).pretty()` (script 02)                                         |
-| 20  | ALL                           | ✅     | `find({tags:{$all:["febre","dor"]}})` (script 02)                        |
-| 21  | SET                           | ✅     | `updateOne(..., {$set:{preco:13.00}})` (script 01-A)                     |
-| 22  | TEXT                          | ✅     | `createIndex({descricao:"text"})` → descricao_text (script 02)           |
-| 23  | SEARCH                        | ✅     | `find({$text:{$search:"febre"}})` → Paracetamol+Dipirona (script 02)     |
-| 24  | FILTER                        | ⬜     |                                                                          |
-| 25  | UPDATE (updateOne/updateMany) | ✅     | `updateOne` reajuste preço / `updateMany` antibióticos (script 01-A/E)   |
-| 26  | SAVE (updateOne/insertOne)    | ✅     | `updateOne(..., {upsert:true})` Vitamina C (script 01-D)                 |
-| 27  | RENAMECOLLECTION              | ⬜     |                                                                          |
-| 28  | COND                          | ✅     | `{$cond:{if:{$lt:["$estoque",10]}...}}` → 4 repor (script 03)            |
-| 29  | LOOKUP                        | ✅     | `{$lookup:{from:"clientes"...}}` vendas→clientes ✓ join (script 03)      |
-| 30  | FINDONE                       | ✅     | `findOne({nome:"Dipirona 500mg"})` (script 02)                           |
-| 31  | ADDTOSET                      | ✅     | `updateOne(..., {$addToSet:{tags:"promoção"}})` (script 01-C)            |
+| #   | Item                          | Status | Query que cobre                                                                                                                                                           |
+| --- | ----------------------------- | ------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1   | USE                           | ✅     | `use farmacia_db` (script 00)                                                                                                                                             |
+| 2   | FIND                          | ✅     | `find({categoria:"analgésico"})` (script 02)                                                                                                                              |
+| 3   | SIZE                          | ✅     | `find({principios_ativos:{$size:3}})` → só Antigripal (script 02)                                                                                                         |
+| 4   | AGGREGATE                     | ✅     | `aggregate([...])` 4 pipelines (script 03)                                                                                                                                |
+| 5   | MATCH                         | ✅     | `{$match:{controlado:true}}` (script 03)                                                                                                                                  |
+| 6   | PROJECT                       | ✅     | `find({}, {nome:1, preco:1, _id:0})` (script 02)                                                                                                                          |
+| 7   | GTE                           | ✅     | `find({preco:{$gte:20}})` (script 02)                                                                                                                                     |
+| 8   | GROUP                         | ✅     | `{$group:{_id:"$categoria",...}}` → 8 categorias (script 03)                                                                                                              |
+| 9   | SUM                           | ✅     | `{$sum:1}` contagem por categoria (script 03)                                                                                                                             |
+| 10  | COUNT (countDocuments)        | ✅     | `countDocuments({categoria:"analgésico"})` → 2 (script 02)                                                                                                                |
+| 11  | MAX                           | ✅     | `{$max:"$preco"}` → 42 Sertralina (script 03)                                                                                                                             |
+| 12  | AVG                           | ✅     | `{$avg:"$preco"}` (script 03)                                                                                                                                             |
+| 13  | EXISTS                        | ✅     | `find({controlado:{$exists:false}})` → Loratadina+Cetirizina (script 02)                                                                                                  |
+| 14  | SORT                          | ✅     | `.sort({preco:-1})` (script 02)                                                                                                                                           |
+| 15  | LIMIT                         | ✅     | `.limit(5)` 5 mais caros (script 02)                                                                                                                                      |
+| 16  | $WHERE                        | ✅     | `find({$where:"this.estoque<10"})` → 4 de estoque baixo. Rodado no **MongoDB local** (Atlas M0 bloqueia; equivalente `$expr` também documentado). (script 04)             |
+| 17  | MAPREDUCE                     | ✅     | `mapReduce(map,reduce)` → contagem por categoria (2 cada). Rodado no **MongoDB local** (Atlas M0 bloqueia). Mesmo resultado que aggregate+group do script 03. (script 04) |
+| 18  | FUNCTION                      | ✅     | `forEach(function(doc){...})` (script 04)                                                                                                                                 |
+| 19  | PRETTY                        | ✅     | `find(...).pretty()` (script 02)                                                                                                                                          |
+| 20  | ALL                           | ✅     | `find({tags:{$all:["febre","dor"]}})` (script 02)                                                                                                                         |
+| 21  | SET                           | ✅     | `updateOne(..., {$set:{preco:13.00}})` (script 01-A)                                                                                                                      |
+| 22  | TEXT                          | ✅     | `createIndex({descricao:"text"})` → descricao_text (script 02)                                                                                                            |
+| 23  | SEARCH                        | ✅     | `find({$text:{$search:"febre"}})` → Paracetamol+Dipirona (script 02)                                                                                                      |
+| 24  | FILTER                        | ✅     | `{$filter:{input:"$itens",cond:{$gt:["$$item.preco_unit",15]}}}` → itens_caros (script 04)                                                                                |
+| 25  | UPDATE (updateOne/updateMany) | ✅     | `updateOne` reajuste preço / `updateMany` antibióticos (script 01-A/E)                                                                                                    |
+| 26  | SAVE (updateOne/insertOne)    | ✅     | `updateOne(..., {upsert:true})` Vitamina C (script 01-D)                                                                                                                  |
+| 27  | RENAMECOLLECTION              | ✅     | `renameCollection("colecao_renomeada")` (script 04)                                                                                                                       |
+| 28  | COND                          | ✅     | `{$cond:{if:{$lt:["$estoque",10]}...}}` → 4 repor (script 03)                                                                                                             |
+| 29  | LOOKUP                        | ✅     | `{$lookup:{from:"clientes"...}}` vendas→clientes ✓ join (script 03)                                                                                                       |
+| 30  | FINDONE                       | ✅     | `findOne({nome:"Dipirona 500mg"})` (script 02)                                                                                                                            |
+| 31  | ADDTOSET                      | ✅     | `updateOne(..., {$addToSet:{tags:"promoção"}})` (script 01-C)                                                                                                             |
