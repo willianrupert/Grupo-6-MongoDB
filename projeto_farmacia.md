@@ -2,7 +2,7 @@
 
 **Disciplina:** IF685 — Gerenciamento de Dados e Informação (2026.1)
 **Professora:** Valéria Cesário Times
-**Aluno:** Matheus (CC — CIn/UFPE)
+**Alunos:** Amanda Trinity, Maria Luisa Amaral, Maria Eduarda Torres, Mirella Fontinelle, Willian Rupert
 **Stack:** MongoDB Atlas (cluster M0) + Compass
 **Banco:** `farmacia_db`
 
