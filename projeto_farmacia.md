@@ -2,11 +2,7 @@
 
 **Disciplina:** IF685 — Gerenciamento de Dados e Informação (2026.1)
 **Professora:** Valéria Cesário Times
-<<<<<<< HEAD
-**Aluno:** Matheus (CC — CIn/UFPE)
-=======
-**Aluno:** Amanda Trinity, Maria Eduarda Torres, Mirella Fontinelle, Maria Luisa Brandão, Matheus Vieira, Willian Rupert
->>>>>>> aa034025df35ccc37726901e4632bcff7ad86bd5
+**Integrantes:** Amanda Trinity, Maria Eduarda Torres, Mirella Fontinelle, Maria Luisa Brandão, Matheus Vieira, Willian Rupert
 **Stack:** MongoDB Atlas (cluster M0) + Compass
 **Banco:** `farmacia_db`
 
@@ -266,7 +262,6 @@ Validado no Compass (13 itens):
 - `$text` busca **palavras inteiras** (não pedaços), ignora maiúscula e acento (via collation/idioma).
 - Só pode haver **1 índice de texto** por collection.
 
-<<<<<<< HEAD
 ---
 
 ## Agregação (script 03_agregacao.js) ✅ VALIDADO
@@ -289,8 +284,6 @@ Agregação = esteira de estágios (pipeline). Documento entra, passa por estág
 - `$cond` = if/else dentro da query, cria campo calculado. Regra de reposição: estoque < 10.
 - Resultados esperados: P2 mais caro = Sertralina (42); P4 'repor' = Fluoxetina(4), Nimesulida(5), Enalapril(7), Paracetamol(7).
 
-=======
->>>>>>> aa034025df35ccc37726901e4632bcff7ad86bd5
 ---
 
 ## 3. Queries decididas
@@ -309,7 +302,6 @@ Os 31 itens obrigatórios. Marcar conforme cada um for coberto por uma query rea
 | 1   | USE                           | ✅     | `use farmacia_db` (script 00)                                            |
 | 2   | FIND                          | ✅     | `find({categoria:"analgésico"})` (script 02)                             |
 | 3   | SIZE                          | ✅     | `find({principios_ativos:{$size:3}})` → só Antigripal (script 02)        |
-<<<<<<< HEAD
 | 4   | AGGREGATE                     | ✅     | `aggregate([...])` 4 pipelines (script 03)                               |
 | 5   | MATCH                         | ✅     | `{$match:{controlado:true}}` (script 03)                                 |
 | 6   | PROJECT                       | ✅     | `find({}, {nome:1, preco:1, _id:0})` (script 02)                         |
@@ -319,17 +311,6 @@ Os 31 itens obrigatórios. Marcar conforme cada um for coberto por uma query rea
 | 10  | COUNT (countDocuments)        | ✅     | `countDocuments({categoria:"analgésico"})` → 2 (script 02)               |
 | 11  | MAX                           | ✅     | `{$max:"$preco"}` → 42 Sertralina (script 03)                            |
 | 12  | AVG                           | ✅     | `{$avg:"$preco"}` (script 03)                                            |
-=======
-| 4   | AGGREGATE                     | ⬜     |                                                                          |
-| 5   | MATCH                         | ⬜     |                                                                          |
-| 6   | PROJECT                       | ✅     | `find({}, {nome:1, preco:1, _id:0})` (script 02)                         |
-| 7   | GTE                           | ✅     | `find({preco:{$gte:20}})` (script 02)                                    |
-| 8   | GROUP                         | ⬜     |                                                                          |
-| 9   | SUM                           | ⬜     |                                                                          |
-| 10  | COUNT (countDocuments)        | ✅     | `countDocuments({categoria:"analgésico"})` → 2 (script 02)               |
-| 11  | MAX                           | ⬜     |                                                                          |
-| 12  | AVG                           | ⬜     |                                                                          |
->>>>>>> aa034025df35ccc37726901e4632bcff7ad86bd5
 | 13  | EXISTS                        | ✅     | `find({controlado:{$exists:false}})` → Loratadina+Cetirizina (script 02) |
 | 14  | SORT                          | ✅     | `.sort({preco:-1})` (script 02)                                          |
 | 15  | LIMIT                         | ✅     | `.limit(5)` 5 mais caros (script 02)                                     |
@@ -345,12 +326,7 @@ Os 31 itens obrigatórios. Marcar conforme cada um for coberto por uma query rea
 | 25  | UPDATE (updateOne/updateMany) | ✅     | `updateOne` reajuste preço / `updateMany` antibióticos (script 01-A/E)   |
 | 26  | SAVE (updateOne/insertOne)    | ✅     | `updateOne(..., {upsert:true})` Vitamina C (script 01-D)                 |
 | 27  | RENAMECOLLECTION              | ⬜     |                                                                          |
-<<<<<<< HEAD
 | 28  | COND                          | ✅     | `{$cond:{if:{$lt:["$estoque",10]}...}}` → 4 repor (script 03)            |
 | 29  | LOOKUP                        | ✅     | `{$lookup:{from:"clientes"...}}` vendas→clientes ✓ join (script 03)      |
-=======
-| 28  | COND                          | ⬜     |                                                                          |
-| 29  | LOOKUP                        | ⬜     |                                                                          |
->>>>>>> aa034025df35ccc37726901e4632bcff7ad86bd5
 | 30  | FINDONE                       | ✅     | `findOne({nome:"Dipirona 500mg"})` (script 02)                           |
 | 31  | ADDTOSET                      | ✅     | `updateOne(..., {$addToSet:{tags:"promoção"}})` (script 01-C)            |
