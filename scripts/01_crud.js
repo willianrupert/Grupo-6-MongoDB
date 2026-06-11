@@ -123,9 +123,9 @@ db.medicamentos.findOne(
 // Agora temos 13 medicamentos (12 + Vitamina C).
 
 /*
-Quinto Bloco: UPDATEMANY + SET  →  atualizar vários de uma vez
-- marcar TODOS os antibióticos com um aviso de receita.
-- updateMany aplica a mudança a todos os docs que batem no filtro.
+Quinto Bloco: UPDATEMANY + SET (atualizar vários de uma vez)
+- marcar TODOS os antibióticos com um aviso de receita
+- updateMany aplica a mudança a todos os docs que batem no filtro
 - Item: 25 (UPDATE, variante updateMany)
 */
 
@@ -141,10 +141,9 @@ db.medicamentos.find(
 );
 
 /*
-Quinto Bloco: DELETE  →  remoção (a parte "D" do CRUD)
-- Pra não apagar nenhum dos medicamentos "de verdade", primeiro
-- inserimos um descartável e depois apagamos ele.
-- Item: remoção (deleteOne) — completa o CRUD
+Quinto Bloco: DELETE => remoção 
+- Pra não apagar nenhum dos medicamentos "de verdade", primeiro inserimos um descartável e depois apagamos ele
+- Item: remoção (deleteOne) 
 */
 
 // insere um produto só pra demonstrar o delete:
@@ -165,9 +164,9 @@ db.medicamentos.deleteOne({ nome: "Produto Teste" });
 // confere que sumiu (deve retornar null):
 db.medicamentos.findOne({ nome: "Produto Teste" }, { nome: 1, _id: 0 });
 
-// =============================================================
-// Estado final esperado dos medicamentos:
-//   12 originais + Vitamina C (upsert) = 13
-//   (o Produto Teste foi inserido e removido, não conta)
-// =============================================================
+/*
+Estado final esperado dos medicamentos:
+12 originais + Vitamina C (upsert) = 13
+o Produto Teste foi inserido e removido, não conta
+*/
 print("total de medicamentos: " + db.medicamentos.countDocuments()); // esperado: 13
